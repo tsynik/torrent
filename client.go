@@ -1412,11 +1412,11 @@ func (cl *Client) acceptLimitClearer() {
 				for c := range t.conns {
 					conns = append(conns, c)
 				}
-				t.cl.unlock()
 
 				for _, c := range conns {
 					c.deleteAllRequests()
 				}
+				t.cl.unlock()
 			}
 
 			cl.lock()
