@@ -1399,27 +1399,28 @@ func (cl *Client) acceptLimitClearer() {
 		case <-cl.closed.LockedChan(cl.locker()):
 			return
 		case <-time.After(15 * time.Minute):
+			// cl.lock()
+			// torrents := make([]*Torrent, 0, len(cl.torrents))
+			// for _, t := range cl.torrents {
+			// 	torrents = append(torrents, t)
+			// }
+			// cl.unlock()
+
+			// for _, t := range torrents {
+			// 	t.cl.lock()
+			// 	conns := make([]*connection, 0, len(t.conns))
+			// 	for c := range t.conns {
+			// 		conns = append(conns, c)
+			// 	}
+			// 	t.cl.unlock()
+
+			// 	for _, c := range conns {
+			// 		c.deleteAllRequests()
+			// 	}
+			// }
+
 			cl.lock()
-			torrents := make([]*Torrent, 0, len(cl.torrents))
-			for _, t := range cl.torrents {
-				torrents = append(torrents, t)
-			}
-			cl.unlock()
-
-			for _, t := range torrents {
-				t.cl.lock()
-				conns := make([]*connection, 0, len(t.conns))
-				for c := range t.conns {
-					conns = append(conns, c)
-				}
-				t.cl.unlock()
-
-				for _, c := range conns {
-					c.deleteAllRequests()
-				}
-			}
-
-			cl.lock()
+			// Simply reset the accept‑limit counters for all IPs.
 			cl.clearAcceptLimits()
 			cl.unlock()
 		}

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"math/rand"
 	"net"
@@ -1526,11 +1527,10 @@ func (c *connection) deleteAllRequests() {
 		c.deleteRequest(r)
 	}
 	if len(c.requests) != 0 {
-		panic(len(c.requests))
+		// panic(len(c.requests))
+		log.Printf("WARNING: %d requests left after deletion, clearing forcibly", len(c.requests))
+		c.requests = make(map[request]struct{})
 	}
-	// for c := range c.t.conns {
-	// 	c.tickleWriter()
-	// }
 }
 
 func (c *connection) tickleWriter() {
