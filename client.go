@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -1416,25 +1417,30 @@ func (cl *Client) acceptLimitClearer() {
 		case <-cl.closed.LockedChan(cl.locker()):
 			return
 		case <-time.After(15 * time.Minute):
-			// cl.lock()
-			// torrents := make([]*Torrent, 0, len(cl.torrents))
-			// for _, t := range cl.torrents {
-			// 	torrents = append(torrents, t)
-			// }
-			// cl.unlock()
+			if cl.config.Debug {
+				cl.lock()
+				torrents := make([]*Torrent, 0, len(cl.torrents))
+				for _, t := range cl.torrents {
+					torrents = append(torrents, t)
+				}
+				cl.unlock()
 
-			// for _, t := range torrents {
-			// 	t.cl.lock()
-			// 	conns := make([]*connection, 0, len(t.conns))
-			// 	for c := range t.conns {
-			// 		conns = append(conns, c)
-			// 	}
-			// 	t.cl.unlock()
-
-			// 	for _, c := range conns {
-			// 		c.deleteAllRequests()
-			// 	}
-			// }
+				for _, t := range torrents {
+					t.cl.lock()
+					// conns := make([]*connection, 0, len(t.conns))
+					// for c := range t.conns {
+					// 	conns = append(conns, c)
+					// }
+					// for _, c := range conns {
+					// 	c.deleteAllRequests()
+					// }
+					t.pendingRequestsMu.RLock()
+					pendingCount := len(t.pendingRequests)
+					t.pendingRequestsMu.RUnlock()
+					slog.Debug("acceptLimitClearer()", "infohash", t.infoHash.String(), "conns", len(t.conns), "halfOpen", len(t.halfOpen), "pendingRequests", pendingCount)
+					t.cl.unlock()
+				}
+			}
 
 			cl.lock()
 			// Simply reset the accept‑limit counters for all IPs.
