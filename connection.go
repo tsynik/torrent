@@ -1357,10 +1357,12 @@ func (c *connection) receiveChunk(msg *pp.Message) error {
 	piece.decrementPendingWrites()
 
 	if err != nil {
-		panic(fmt.Sprintf("error writing chunk: %v", err))
+		// panic(fmt.Sprintf("error writing chunk: %v", err))
+		c.t.logger.Printf("error writing chunk: %v", err)
+		c.Drop() // close connection
 		// t.pendRequest(req)
 		// t.updatePieceCompletion(pieceIndex(msg.Index))
-		// return nil
+		return nil
 	}
 
 	// It's important that the piece is potentially queued before we check if
