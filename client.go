@@ -930,7 +930,7 @@ func (cl *Client) runHandshookConn(c *connection, t *Torrent) error {
 		return fmt.Errorf("adding connection: %w", err)
 	}
 	defer t.dropConnection(c)
-	go c.writer(time.Minute)
+	go c.writer(time.Minute) // keepAliveTimeout 1m TODO: Make configurable / use the one from config
 	cl.sendInitialMessages(c, t)
 
 	if err := c.mainReadLoop(); err != nil {
@@ -1148,9 +1148,9 @@ func (cl *Client) AddTorrentInfoHashWithStorage(infoHash metainfo.Hash, specStor
 			// Wait until the torrent metadata becomes available
 			// This ensures t.isPrivate() can correctly read the privacy flag before initiating LPD
 			<-t.GotInfo()
-			if !t.isPrivate() { 
-				cl.lpd.lpdPeers(t) 
-				cl.lpd.lpdForce() 
+			if !t.isPrivate() {
+				cl.lpd.lpdPeers(t)
+				cl.lpd.lpdForce()
 			}
 		}()
 	}
