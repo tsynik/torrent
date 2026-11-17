@@ -1437,7 +1437,13 @@ func (c *connection) uploadAllowed() bool {
 
 func (c *connection) setRetryUploadTimer(delay time.Duration) {
 	if c.uploadTimer == nil {
-		c.uploadTimer = time.AfterFunc(delay, c.writerCond.Broadcast)
+		c.uploadTimer = time.AfterFunc(delay, func() {
+			// Hold the writer's lock so the wakeup can't land before Wait.
+			locker := c.writerCond.L
+			locker.Lock()
+			defer locker.Unlock()
+			c.tickleWriter()
+		})
 	} else {
 		c.uploadTimer.Reset(delay)
 	}
