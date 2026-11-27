@@ -69,6 +69,7 @@ func (me *Peers) UnmarshalBencode(b []byte) (err error) {
 func setAnnounceParams(_url *url.URL, ar *AnnounceRequest, opts Announce) {
 	q := _url.Query()
 
+	q.Set("key", strconv.FormatInt(int64(ar.Key), 10))
 	q.Set("info_hash", string(ar.InfoHash[:]))
 	q.Set("peer_id", string(ar.PeerId[:]))
 	// AFAICT, port is mandatory, and there's no implied port key.
@@ -86,12 +87,12 @@ func setAnnounceParams(_url *url.URL, ar *AnnounceRequest, opts Announce) {
 	// Take EncryptionPolicy or something like it as a parameter.
 	q.Set("supportcrypto", "1")
 	if opts.ClientIp4.IP != nil {
-		q.Set("ipv4", opts.ClientIp4.String())
-		q.Add("ip", opts.ClientIp4.String())
+		q.Set("ipv4", opts.ClientIp4.IP.String())
+		q.Add("ip", opts.ClientIp4.IP.String())
 	}
 	if opts.ClientIp6.IP != nil {
-		q.Set("ipv6", opts.ClientIp6.String())
-		q.Add("ip", opts.ClientIp6.String())
+		q.Set("ipv6", opts.ClientIp6.IP.String())
+		q.Add("ip", opts.ClientIp6.IP.String())
 	}
 	// We're operating purely on query-escaped strings, where + would have already been encoded to
 	// %20 and + has no other special meaning. See https://github.com/anacrolix/torrent/issues/534.
